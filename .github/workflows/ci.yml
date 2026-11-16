@@ -1,0 +1,47 @@
+name: Node.js CI
+
+# Запуск після кожного push до main.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Завантаження коду репозиторію.
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      # Установлення Node.js.
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      # Установлення залежностей.
+      - name: Install dependencies
+        run: npm install
+
+      # Помилка білду призведе до помилки всього CI.
+      - name: Build project
+        run: npm run build
+
+      # Перевірка непорожнього результату білду.
+      - name: Verify build
+        run: |
+          test -s dist/index.html
+          echo "Build completed successfully."
+
+      # Збереження результату як артефакту.
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: node-build
+          path: dist/
+          if-no-files-found: error
